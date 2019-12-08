@@ -4,13 +4,15 @@ from google_images_download import google_images_download
 import sys
 from gtts import gTTS
 import jgen
+import os
+import shutil
 
 
 # Переводит текст в аудио сообщение
-def get_audio(s, i):
+def get_audio(s, path):
     language = 'ru'
     myobj = gTTS(text=s, lang=language, slow=False)
-    myobj.save('message' + str(i) + '.mp3')
+    myobj.save(path)
 
 
 # Получает картику по запросу kw
@@ -24,9 +26,14 @@ def get_pic(kw):
     arguments = {"keywords": kw,
                  "limit": 3,
                  "print_urls": True,
-                 "size": ">2MP",
+                 "size": ">2MP"
                  }
     paths = response.download(arguments)
+    dirPath = os.path.abspath(__file__)
+    ind = dirPath.index('\\', len(dirPath) - 10, len(dirPath))
+    dirPath = dirPath[0:ind + 1] + "downloads"
+    shutil.rmtree(dirPath)
+    # os.remove(dirPath)
 
     sys.stdout = orig_stdout
     f.close()
@@ -59,6 +66,7 @@ what_is_good = "Что есть хорошо?"
 # Обработчик начала общения
 @bot.message_handler(commands=['start'])
 def start_cmd(msg):
+
     keybd = telebot.types.ReplyKeyboardMarkup(True)
     btn1 = telebot.types.KeyboardButton(text=advice)
     btn4 = telebot.types.KeyboardButton(text="генерировать аудио")
@@ -112,10 +120,12 @@ def random_citation(msg):
                 bot.send_photo(msg.chat.id, pics[random.randint(0, len(pics) - 1)])
             print(pics)
         if settings[1]:
-            get_audio(joke, settings[0])
-            vc = open("message" + str(settings[0]) + ".mp3", 'rb')
+            path = "voice-msg" + str(msg.chat.id) + str(settings[0]) + ".mp3"
+            get_audio(joke, path)
+            vc = open(path, 'rb')
             bot.send_voice(msg.chat.id, voice=vc)
             vc.close()
+            os.remove(path)
             settings[0] += 1
         bot.send_message(msg.chat.id, joke)
     elif "генерировать аудио" not in msg.text or "генерировать картинку" not in msg.text:
