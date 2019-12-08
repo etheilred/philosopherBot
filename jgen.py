@@ -9,6 +9,10 @@ def photo_search(joke):
     a.reverse()
     return " ".join(a[:2])
 
+def search(text, word):
+    for  i in range(len(text)):
+        if word == text[i][1]:
+            return(word + " " + text[i][2])
 
 def random_start(text):
     num = random.randint(1, len(text))
@@ -17,23 +21,30 @@ def random_start(text):
             return text[i][1]
 
 
+def destr(word,key):
+    st = ""
+    arr = list(map(str, word.split()))
+    st += arr[1]+" "
+    st+=key
+    return st
+
 # Генерирует цитату по словарю и ключевому слову word
-def frequency(dict, word):
+def frequency(dt, word):
     # размер высказавания пока будет равен 10
-    st = word.title() + " "
+    arr = list(map(str, word.split()))
+    st = arr[0].title() + " "
     for i in range(10):
-        if word == "END":
-            return st
-        summ = 0
-        bill = 0
-        for key in dict[word]:
-            summ += dict[word][key]
+        own,bill = 0,0
+        for el in dt[word]:
+            own += dt[word][el]
         num = random.uniform(0, 1)
-        for key in dict[word]:
-            bill += dict[word][key]
-            if bill / summ > num:
-                st += key + " "
-                word = key
+        for el in dt[word]:
+            bill += dt[word][el]
+            if bill / own > num:
+                st += el + " "
+                word = destr(word,el)
+                if el == "END":
+                    return st
                 break
     return st
 
@@ -42,20 +53,18 @@ def frequency(dict, word):
 def normalize(text):
     dt = {}
     for i in range(len(text)):
-        for j in range(len(text[i])):
-            if text[i][j] != 'END':
-                if text[i][j] not in dt:
-                    d = {text[i][j + 1]: 1}
-                    dt[text[i][j]] = d
+        for j in range(1,len(text[i])-2):
+            unick = text[i][j] + " " + text[i][j+1]
+            if unick not in dt:
+                d = {}
+                d[text[i][j+2]] = 1
+                dt[unick] = d
+            else:
+                if text[i][j + 2] not in dt[unick]:
+                    dt[unick][text[i][j+2]] = 1
                 else:
-                    if text[i][j + 1] not in dt[text[i][j]]:
-                        dt[text[i][j]][text[i][j + 1]] = 1
-                    else:
-                        dt[text[i][j]][text[i][j + 1]] += 1
+                    dt[unick][text[i][j+2]] += 1
 
-        else:
-            d = {"None": 1}
-            dt[text[i][j]] = d
     return dt
 
 
@@ -95,8 +104,10 @@ def get_joke(word):
     start = word
     a = False
     for i in range(len(pre_text)):
-        if start == pre_text[i][1]:
+        if pre_text[i][1] == start:
             a = True
+            start = search(pre_text, start)
+            break
     if not a:
         start = random_start(pre_text)
     # print(frequency(dt,start))
