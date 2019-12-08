@@ -9,24 +9,27 @@ def photo_search(joke):
     a.reverse()
     return " ".join(a[:2])
 
+
 def search(text, word):
-    for  i in range(len(text)):
+    for i in range(len(text)):
         if word == text[i][1]:
-            return(word + " " + text[i][2])
+            return word + " " + text[i][2]
+
 
 def random_start(text):
     num = random.randint(1, len(text))
     for i in range(len(text)):
         if i + 1 == num:
-            return text[i][1]
+            return text[i][1] + " " + text[i][2]
 
 
-def destr(word,key):
+def destr(word, key):
     st = ""
     arr = list(map(str, word.split()))
-    st += arr[1]+" "
-    st+=key
+    st += arr[1] + " "
+    st += key
     return st
+
 
 # Генерирует цитату по словарю и ключевому слову word
 def frequency(dt, word):
@@ -34,15 +37,17 @@ def frequency(dt, word):
     arr = list(map(str, word.split()))
     st = arr[0].title() + " "
     for i in range(10):
-        own,bill = 0,0
+        own, bill = 0, 0
         for el in dt[word]:
             own += dt[word][el]
+            if el == "END":                       ###
+                break                             ###
         num = random.uniform(0, 1)
         for el in dt[word]:
             bill += dt[word][el]
             if bill / own > num:
                 st += el + " "
-                word = destr(word,el)
+                word = destr(word, el)
                 if el == "END":
                     return st
                 break
@@ -53,17 +58,16 @@ def frequency(dt, word):
 def normalize(text):
     dt = {}
     for i in range(len(text)):
-        for j in range(1,len(text[i])-2):
-            unick = text[i][j] + " " + text[i][j+1]
+        for j in range(1, len(text[i]) - 2):
+            unick = text[i][j] + " " + text[i][j + 1]
             if unick not in dt:
-                d = {}
-                d[text[i][j+2]] = 1
+                d = {text[i][j + 2]: 1}
                 dt[unick] = d
             else:
                 if text[i][j + 2] not in dt[unick]:
-                    dt[unick][text[i][j+2]] = 1
+                    dt[unick][text[i][j + 2]] = 1
                 else:
-                    dt[unick][text[i][j+2]] += 1
+                    dt[unick][text[i][j + 2]] += 1
 
     return dt
 
