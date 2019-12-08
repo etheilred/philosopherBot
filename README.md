@@ -3,5 +3,5 @@ Telegram bot, which makes you wiser
 
   Used libraries:
 - pytelegrambotapi
-- google_image_download
-- gttp
+- google_images_download
+- gtts
