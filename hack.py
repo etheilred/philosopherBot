@@ -5,12 +5,14 @@ import sys
 from gtts import gTTS
 import jgen
 
+
 # Переводит текст в аудио сообщение
 def get_audio(s):
     global i
     language = 'ru'
     myobj = gTTS(text=s, lang=language, slow=False)
-    myobj.save('message'+str(i)+'.mp3')
+    myobj.save('message' + str(i) + '.mp3')
+
 
 # Получает картику по запросу kw
 def get_pic(kw):
@@ -40,6 +42,7 @@ def get_pic(kw):
             urls.append(content[j - 1][11:-1])
     return urls
 
+
 # токен бота
 token = "855028663:AAGQgv_AG6x73oZGfYSvyx9dTxG_nOnh6_k"
 
@@ -52,6 +55,7 @@ telebot.apihelper.proxy = {'https': 'socks5h://geek:socks@t.geekclass.ru:7777'}
 advice = "Дай совет"
 what_is_bad = "Что есть плохо?"
 what_is_good = "Что есть хорошо?"
+
 
 # Обработчик начала общения
 @bot.message_handler(commands=['start'])
@@ -70,12 +74,13 @@ def start_cmd(msg):
 
     bot.send_message(uid, "Привет! Я хочу поделиться с тобой своей мудростью!", reply_markup=keybd)
 
+
 # Обработчик ввода пользователя
 @bot.message_handler(content_types=['text'])
 def random_citation(msg):
     global i
     global gen_audio
-    if msg.text == "генерировать аудио": # Пользователь хочет получать аудиосообщения
+    if msg.text == "генерировать аудио":  # Пользователь хочет получать аудиосообщения
         gen_audio = True
         keybd = telebot.types.ReplyKeyboardMarkup(True)
         btn1 = telebot.types.KeyboardButton(text=advice)
@@ -87,7 +92,7 @@ def random_citation(msg):
         keybd.add(btn3)
         keybd.add(btn4)
         bot.send_message(msg.chat.id, "Теперь я говорю, проверь!", reply_markup=keybd)
-    if msg.text == "не генерировать аудио": # Пользователь не хочет получать аудиосообщения
+    if msg.text == "не генерировать аудио":  # Пользователь не хочет получать аудиосообщения
         gen_audio = False
         keybd = telebot.types.ReplyKeyboardMarkup(True)
         btn1 = telebot.types.KeyboardButton(text=advice)
@@ -99,13 +104,13 @@ def random_citation(msg):
         keybd.add(btn3)
         keybd.add(btn4)
         bot.send_message(msg.chat.id, "Ни скажу больше ни слова без разрешения", reply_markup=keybd)
-    if msg.text in [advice, what_is_bad, what_is_good]: # Отпрвка цитаты
+    if msg.text in [advice, what_is_bad, what_is_good]:  # Отпрвка цитаты
         gen_word = ""
-        if (msg.text == advice):
+        if msg.text == advice:
             gen_word = 'разум'
-        if (msg.text == what_is_bad):
+        if msg.text == what_is_bad:
             gen_word = 'плохо'
-        if (msg.text == what_is_good):
+        if msg.text == what_is_good:
             gen_word = 'хорошо'
         joke = jgen.get_joke(gen_word)
         kw = jgen.photo_search(joke)
@@ -118,7 +123,7 @@ def random_citation(msg):
         # bot.send_message(msg.chat.id, jgen.get_joke())
         if len(picts) != 0:
             bot.send_photo(msg.chat.id, picts[random.randint(0, len(picts) - 1)], caption=joke)
-            vc = open("message"+str(i)+".mp3", 'rb')
+            vc = open("message" + str(i) + ".mp3", 'rb')
             if gen_audio:
                 bot.send_voice(msg.chat.id, voice=vc)
             vc.close()
@@ -126,6 +131,7 @@ def random_citation(msg):
         else:
             bot.send_message(msg.chat.id, joke)
         print(picts)
+
 
 i = 0
 gen_audio = False

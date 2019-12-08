@@ -1,10 +1,6 @@
 import random
 import sys
 
-def conct(arr1, arr2):
-    for i in range(len(arr2)):
-        arr1.append(arr2[i])
-    return arr1
 
 # возвращает самое частое слово
 def photo_search(joke):
@@ -15,10 +11,11 @@ def photo_search(joke):
 
 
 def random_start(text):
-    num = random.randint(1,len(text))
-    for  i in range(len(text)):
-        if i+1 == num:
-            return(text[i][1])
+    num = random.randint(1, len(text))
+    for i in range(len(text)):
+        if i + 1 == num:
+            return text[i][1]
+
 
 # Генерирует цитату по словарю и ключевому слову word
 def frequency(dict, word):
@@ -40,6 +37,7 @@ def frequency(dict, word):
                 break
     return st
 
+
 # Переводит список слов в словарь
 def normalize(text):
     dt = {}
@@ -47,8 +45,7 @@ def normalize(text):
         for j in range(len(text[i])):
             if text[i][j] != 'END':
                 if text[i][j] not in dt:
-                    d = {}
-                    d[text[i][j + 1]] = 1
+                    d = {text[i][j + 1]: 1}
                     dt[text[i][j]] = d
                 else:
                     if text[i][j + 1] not in dt[text[i][j]]:
@@ -57,10 +54,10 @@ def normalize(text):
                         dt[text[i][j]][text[i][j + 1]] += 1
 
         else:
-            d = {}
-            d["None"] = 1
+            d = {"None": 1}
             dt[text[i][j]] = d
     return dt
+
 
 # Парсит базу данных
 def parse2(words):
@@ -70,12 +67,12 @@ def parse2(words):
     arr.append(["START"])
     for i in range(len(words)):
         for j in range(len(words[i])):
-            if words[i][j] >= "а" and words[i][j] <= "я":
+            if "а" <= words[i][j] <= "я":
                 st += words[i][j]
             elif words[i][j] == ".":
                 arr[index].append(st)
                 arr[index].append("END")
-                index+= 1
+                index += 1
                 st = ""
                 arr.append(["START"])
                 break
@@ -87,21 +84,15 @@ def parse2(words):
             arr[index].append("END")
     return arr
 
+
 # Получает высказывание, основываясь на ключевом слове word
 def get_joke(word):
-    text_file = open('Phil1.txt', 'r', encoding='utf-8')
+    text_file = open('Phil.txt', 'r', encoding='utf-8')
     pre_text = text_file.readlines()
-    # print(pre_text)
     pre_text = parse2(pre_text)[:-1]
-    text_file.close()
-    text_file = open('Phil2.txt', 'r', encoding='utf-8')
-    new = text_file.readlines()
-    pre_text = conct(pre_text, parse2(new)[:-1])
     text_file.close()
     dt = normalize(pre_text)
     start = word
-    # print(pre_text)
-    # print(start)
     a = False
     for i in range(len(pre_text)):
         if start == pre_text[i][1]:
@@ -110,7 +101,8 @@ def get_joke(word):
         start = random_start(pre_text)
     # print(frequency(dt,start))
     st = frequency(dt, start)
-    if (st[-2] == "D"):
+
+    if st.contains("END"):
         st = st[:-4]
     return st
 
