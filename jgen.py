@@ -102,7 +102,7 @@ def get_joke(word):
     # print(frequency(dt,start))
     st = frequency(dt, start)
 
-    if st.contains("END"):
+    if st[-2] == "D":
         st = st[:-4]
     return st
 
