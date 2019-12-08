@@ -7,8 +7,7 @@ import jgen
 
 
 # Переводит текст в аудио сообщение
-def get_audio(s):
-    global i
+def get_audio(s, i):
     language = 'ru'
     myobj = gTTS(text=s, lang=language, slow=False)
     myobj.save('message' + str(i) + '.mp3')
@@ -60,11 +59,10 @@ what_is_good = "Что есть хорошо?"
 # Обработчик начала общения
 @bot.message_handler(commands=['start'])
 def start_cmd(msg):
-    uid = msg.chat.id
     keybd = telebot.types.ReplyKeyboardMarkup(True)
     btn1 = telebot.types.KeyboardButton(text=advice)
-    btn4 = telebot.types.KeyboardButton(text="не генерировать аудио" if gen_audio else "генерировать аудио")
-    btn5 = telebot.types.KeyboardButton(text="не генерировать картинку" if gen_picts else "генерировать картинку")
+    btn4 = telebot.types.KeyboardButton(text="генерировать аудио")
+    btn5 = telebot.types.KeyboardButton(text="генерировать картинку")
     btn3 = telebot.types.KeyboardButton(text=what_is_good)
     btn2 = telebot.types.KeyboardButton(text=what_is_bad)
     keybd.add(btn1)
@@ -72,23 +70,26 @@ def start_cmd(msg):
     keybd.add(btn3)
     keybd.add(btn4)
     keybd.add(btn5)
-    bot.send_message(uid, "Привет! Я хочу поделиться с тобой своей мудростью!", reply_markup=keybd)
+    personal_settings[msg.chat.id] = [0, False, False]
+    bot.send_message(msg.chat.id, "Привет! Я хочу поделиться с тобой своей мудростью!", reply_markup=keybd)
 
 
 # Обработчик ввода пользователя
 @bot.message_handler(content_types=['text'])
 def random_citation(msg):
-    global i
-    global gen_audio
-    global gen_picts
+    if msg.chat.id not in personal_settings.keys():
+        settings = [0, False, False]
+    else:
+        settings = personal_settings[msg.chat.id]
+
     if msg.text == "генерировать аудио":  # Пользователь хочет получать аудиосообщения
-        gen_audio = True
+        settings[1] = True
     elif msg.text == "не генерировать аудио":
-        gen_audio = False
+        settings[1] = False
     elif msg.text == "генерировать картинку":
-        gen_picts = True
+        settings[2] = True
     elif msg.text == "не генерировать картинку":
-        gen_picts = False
+        settings[2] = False
 
     if msg.text in [advice, what_is_bad, what_is_good]:  # Отпрвка цитаты
         gen_word = ""
@@ -99,29 +100,29 @@ def random_citation(msg):
         if msg.text == what_is_good:
             gen_word = 'хорошо'
         joke = ""
-        while len(joke.split()) < 5:
+        while len(joke.split()) < 4:
             joke = jgen.get_joke(gen_word)
         print(joke)
 
-        if gen_picts:
+        if settings[2]:
             kw = jgen.photo_search(joke)
             print(kw)
-            picts = get_pic(kw)
-            if len(picts) != 0:
-                bot.send_photo(msg.chat.id, picts[random.randint(0, len(picts) - 1)])
-            print(picts)
-        if gen_audio:
-            get_audio(joke)
-            vc = open("message" + str(i) + ".mp3", 'rb')
+            pics = get_pic(kw)
+            if len(pics) != 0:
+                bot.send_photo(msg.chat.id, pics[random.randint(0, len(pics) - 1)])
+            print(pics)
+        if settings[1]:
+            get_audio(joke, settings[0])
+            vc = open("message" + str(settings[0]) + ".mp3", 'rb')
             bot.send_voice(msg.chat.id, voice=vc)
             vc.close()
-            i += 1
+            settings[0] += 1
         bot.send_message(msg.chat.id, joke)
-    else:
+    elif "генерировать аудио" not in msg.text or "генерировать картинку" not in msg.text:
         keybd = telebot.types.ReplyKeyboardMarkup(True)
         btn1 = telebot.types.KeyboardButton(text=advice)
-        btn4 = telebot.types.KeyboardButton(text="не генерировать аудио" if gen_audio else "генерировать аудио")
-        btn5 = telebot.types.KeyboardButton(text="не генерировать картинку" if gen_picts else "генерировать картинку")
+        btn4 = telebot.types.KeyboardButton(text="не генерировать аудио" if settings[1] else "генерировать аудио")
+        btn5 = telebot.types.KeyboardButton(text="не генерировать картинку" if settings[2] else "генерировать картинку")
         btn3 = telebot.types.KeyboardButton(text=what_is_good)
         btn2 = telebot.types.KeyboardButton(text=what_is_bad)
         keybd.add(btn1)
@@ -130,10 +131,13 @@ def random_citation(msg):
         keybd.add(btn4)
         keybd.add(btn5)
         bot.send_message(msg.chat.id, "Как прикажешь!", reply_markup=keybd)
+    else:
+        bot.send_message(msg.chat.id, "Моя твоя не понимать. Щёлкай по предложенным кнопкам!")
+
+    personal_settings[msg.chat.id] = settings
 
 
-i = 0
-gen_audio = False
-gen_picts = False
+# personal_settings[user_id] = (i, gen_audio, gen_pics)
+personal_settings = {}
 
 bot.polling()
