@@ -36,20 +36,20 @@ def frequency(dt, word):
     # размер высказавания пока будет равен 10
     arr = list(map(str, word.split()))
     st = arr[0].title() + " "
-    for i in range(10):
+    while True:
         own, bill = 0, 0
         for el in dt[word]:
             own += dt[word][el]
-            if el == "END":                       ###
-                break                             ###
+            if el == "END":
+                break
         num = random.uniform(0, 1)
         for el in dt[word]:
             bill += dt[word][el]
             if bill / own > num:
-                st += el + " "
-                word = destr(word, el)
                 if el == "END":
                     return st
+                st += el + " "
+                word = destr(word, el)
                 break
     return st
 
@@ -80,7 +80,8 @@ def parse2(words):
     arr.append(["START"])
     for i in range(len(words)):
         for j in range(len(words[i])):
-            if "а" <= words[i][j] <= "я":
+            # почему-то буква ё не находится в промежутке от а до я
+            if ("а" <= words[i][j] <= "я") or words[i][j] == "ё":
                 st += words[i][j]
             elif words[i][j] == ".":
                 arr[index].append(st)
@@ -117,8 +118,6 @@ def get_joke(word):
     # print(frequency(dt,start))
     st = frequency(dt, start)
 
-    if st[-2] == "D":
-        st = st[:-4]
     return st
 
 

@@ -6,6 +6,7 @@ from gtts import gTTS
 import jgen
 import os
 import shutil
+from _collections import deque
 
 
 # Переводит текст в аудио сообщение
@@ -68,7 +69,6 @@ what_is_good = "Что есть хорошо?"
 # Обработчик начала общения
 @bot.message_handler(commands=['start'])
 def start_cmd(msg):
-
     keybd = telebot.types.ReplyKeyboardMarkup(True)
     btn1 = telebot.types.KeyboardButton(text=advice)
     btn4 = telebot.types.KeyboardButton(text="генерировать аудио")
@@ -110,9 +110,13 @@ def random_citation(msg):
         if msg.text == what_is_good:
             gen_word = 'хорошо'
         joke = ""
-        while len(joke.split()) < 4:
+        # генерация высказывания длинной от 4 до 12 слов
+        while (not 4 <= len(joke.split()) <= 12) or joke in Q5:
             joke = jgen.get_joke(gen_word)
         print(joke)
+        Q5.append(joke)
+        if len(Q5) > 5:
+            Q5.popleft()
 
         if settings[2]:
             kw = jgen.photo_search(joke)
@@ -150,6 +154,7 @@ def random_citation(msg):
 
 
 # personal_settings[user_id] = (i, gen_audio, gen_pics)
-personal_settings = {}
+personal_settings = {} # хранятся настройки для каждого id отдельно
+Q5 = deque() # содержатся последние 5 высказываний (чтобы не было частых повторов)
 
 bot.polling()
