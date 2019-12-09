@@ -16,9 +16,10 @@ def get_audio(s, path):
 
 
 # Получает картику по запросу kw
-def get_pic(kw):
+def get_pic(kw, id):
     orig_stdout = sys.stdout
-    f = open('URLS.txt', 'w')
+    path = 'URLS' + str(id) + '.txt'
+    f = open(path, 'w')
     sys.stdout = f
 
     response = google_images_download.googleimagesdownload()
@@ -38,9 +39,10 @@ def get_pic(kw):
     sys.stdout = orig_stdout
     f.close()
 
-    with open('URLS.txt') as f:
+    with open(path) as f:
         content = f.readlines()
     f.close()
+    os.remove(path)
 
     urls = []
     for j in range(len(content)):
@@ -115,7 +117,7 @@ def random_citation(msg):
         if settings[2]:
             kw = jgen.photo_search(joke)
             print(kw)
-            pics = get_pic(kw)
+            pics = get_pic(kw, msg.chat.id)
             if len(pics) != 0:
                 bot.send_photo(msg.chat.id, pics[random.randint(0, len(pics) - 1)])
             print(pics)
